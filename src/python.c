@@ -4,11 +4,41 @@
 #include "metaentry.h"
 
 static PyObject* compare(PyObject* self, PyObject* args);
+static PyObject* savemetadata(PyObject* self, PyObject* args);
 
 static PyMethodDef module_methods[] = {
 	{"compare", compare, METH_VARARGS, "returns list of files changed"},
+	{"savemetadata", savemetadata, METH_VARARGS, "saves metadata file"},
 	{NULL, NULL, 0, NULL}  /* Sentinel */
 };
+
+static PyObject* savemetadata(PyObject* self, PyObject* args) {
+	char * path;
+	char * libmetastorefile;
+	static struct metasettings settings = {
+		.metafile = METAFILE,
+		.do_mtime = false,
+		.do_emptydirs = false,
+		.do_removeemptydirs = false,
+		.do_git = false,
+	};
+
+
+	// Parse the input arguments
+	if (!PyArg_ParseTuple(args, "ss", &path, &libmetastorefile)) {
+		return NULL;
+	}
+
+	int i, c;
+	struct metahash *real = NULL;
+
+	settings.metafile = strdup( libmetastorefile );
+	mentries_recurse_path(path, &real, &settings);
+	mentries_tofile(real, settings.metafile);
+
+	Py_INCREF(Py_True);
+	return Py_True;
+}
 
 
 //pfunc(real, stored, mentry_compare(real, stored, st));
