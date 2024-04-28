@@ -33,8 +33,8 @@ struct metaentry {
 	char    *path;
 	unsigned pathlen;
 
-	char    *owner;
-	char    *group;
+	uid_t    owner;
+	gid_t    group;
 	mode_t   mode;
 	time_t   mtime;
 	long     mtimensec;

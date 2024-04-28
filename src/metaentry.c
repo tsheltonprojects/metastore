@@ -63,8 +63,6 @@ mentry_free(struct metaentry *m)
 		return;
 
 	free(m->path);
-	free(m->owner);
-	free(m->group);
 
 	for (i = 0; i < m->xattrs; i++) {
 		free(m->xattr_names[i]);
@@ -202,8 +200,6 @@ mentry_create(const char *path)
 	char *list, *attr;
 #endif /* !NO_XATTR */
 	struct stat sbuf;
-	struct passwd *pbuf;
-	struct group *gbuf;
 #if !defined(NO_XATTR) || !(NO_XATTR+0)
 	int i;
 #endif /* !NO_XATTR */
@@ -239,25 +235,11 @@ mentry_create(const char *path)
 		}
 	}
 
-	pbuf = xgetpwuid(sbuf.st_uid);
-	if (!pbuf) {
-		msg(MSG_ERROR, "getpwuid failed for %s: uid %i not found\n",
-			path, (int)sbuf.st_uid);
-		return NULL;
-	}
-
-	gbuf = xgetgrgid(sbuf.st_gid);
-	if (!gbuf) {
-		msg(MSG_ERROR, "getgrgid failed for %s: gid %i not found\n",
-			path, (int)sbuf.st_gid);
-		return NULL;
-	}
-
 	mentry = mentry_alloc();
 	mentry->path = xstrdup(path);
 	mentry->pathlen = strlen(mentry->path);
-	mentry->owner = xstrdup(pbuf->pw_name);
-	mentry->group = xstrdup(gbuf->gr_name);
+	mentry->owner = sbuf.st_uid;
+	mentry->group = sbuf.st_uid;
 	mentry->mode = sbuf.st_mode & 0177777;
 	mentry->mtime = sbuf.st_mtim.tv_sec;
 	mentry->mtimensec = sbuf.st_mtim.tv_nsec;
@@ -454,8 +436,8 @@ mentries_tofile(const struct metahash *mhash, const char *path)
 	for (key = 0; key < HASH_INDEXES; key++) {
 		for (mentry = mhash->bucket[key]; mentry; mentry = mentry->next) {
 			write_string(mentry->path, to);
-			write_string(mentry->owner, to);
-			write_string(mentry->group, to);
+			write_int((uint64_t)mentry->owner, 8, to);
+			write_int((uint64_t)mentry->group, 8, to);
 			write_int((uint64_t)mentry->mtime, 8, to);
 			write_int((uint64_t)mentry->mtimensec, 8, to);
 			write_int((uint64_t)mentry->size, 8, to);
@@ -538,8 +520,8 @@ mentries_fromfile(struct metahash **mhash, const char *path)
 		mentry = mentry_alloc();
 		mentry->path = read_string(&ptr, max);
 		mentry->pathlen = strlen(mentry->path);
-		mentry->owner = read_string(&ptr, max);
-		mentry->group = read_string(&ptr, max);
+		mentry->owner = (uid_t)read_int(&ptr, 8, max);
+		mentry->group = (gid_t)read_int(&ptr, 8, max);
 		mentry->mtime = (time_t)read_int(&ptr, 8, max);
 		mentry->mtimensec = (time_t)read_int(&ptr, 8, max);
 		mentry->size = (off_t)read_int(&ptr, 8, max);
@@ -628,10 +610,10 @@ mentry_compare(struct metaentry *left, struct metaentry *right, msettings *st )
 	if (strcmp(left->path, right->path))
 		return -1;
 
-	if (strcmp(left->owner, right->owner))
+	if (left->owner != right->owner)
 		retval |= DIFF_OWNER;
 
-	if (strcmp(left->group, right->group))
+	if (left->group != right->group)
 		retval |= DIFF_GROUP;
 
 	if ((left->mode & 07777) != (right->mode & 07777))
@@ -706,7 +688,7 @@ mentries_dump(struct metahash *mhash)
 			localtime_r(&mentry->mtime, &cal);
 			strftime(date, sizeof(date), "%F %T", &cal);
 			strftime(zone, sizeof(zone), "%z", &cal);
-			printf("%s\t%s\t%s\t%s.%09ld %s\t%s%s\n",
+			printf("%s\t%i\t%i\t%s.%09ld %s\t%s%s\n",
 				   mode,
 				   mentry->owner, mentry->group,
 				   date, mentry->mtimensec, zone,

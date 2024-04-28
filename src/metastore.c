@@ -140,8 +140,8 @@ compare_print(struct metaentry *real, struct metaentry *stored, int cmp, void * 
 static void
 compare_fix(struct metaentry *real, struct metaentry *stored, int cmp)
 {
-	struct group *group;
-	struct passwd *owner;
+	//struct group *group;
+	//struct passwd *owner;
 	gid_t gid = -1;
 	uid_t uid = -1;
 	struct timespec times[2];
@@ -183,29 +183,29 @@ compare_fix(struct metaentry *real, struct metaentry *stored, int cmp)
 	msg(MSG_QUIET, "%s:\tchanging metadata\n", real->path);
 
 	while (cmp & (DIFF_OWNER | DIFF_GROUP)) {
-		if (cmp & DIFF_OWNER) {
-			msg(MSG_NORMAL, "%s:\tchanging owner from %s to %s\n",
-			    real->path, real->owner, stored->owner);
-			owner = xgetpwnam(stored->owner);
-			if (!owner) {
-				msg(MSG_DEBUG, "\tgetpwnam failed: %s\n",
-				    strerror(errno));
-				break;
-			}
-			uid = owner->pw_uid;
-		}
+		//if (cmp & DIFF_OWNER) {
+		//	msg(MSG_NORMAL, "%s:\tchanging owner from %s to %s\n",
+		//	    real->path, real->owner, stored->owner);
+		//	owner = xgetpwnam(stored->owner);
+		//	if (!owner) {
+		//		msg(MSG_DEBUG, "\tgetpwnam failed: %s\n",
+		//		    strerror(errno));
+		//		break;
+		//	}
+		//	uid = owner->pw_uid;
+		//}
 
-		if (cmp & DIFF_GROUP) {
-			msg(MSG_NORMAL, "%s:\tchanging group from %s to %s\n",
-			    real->path, real->group, stored->group);
-			group = xgetgrnam(stored->group);
-			if (!group) {
-				msg(MSG_DEBUG, "\tgetgrnam failed: %s\n",
-				    strerror(errno));
-				break;
-			}
-			gid = group->gr_gid;
-		}
+		//if (cmp & DIFF_GROUP) {
+		//	msg(MSG_NORMAL, "%s:\tchanging group from %s to %s\n",
+		//	    real->path, real->group, stored->group);
+		//	group = xgetgrnam(stored->group);
+		//	if (!group) {
+		//		msg(MSG_DEBUG, "\tgetgrnam failed: %s\n",
+		//		    strerror(errno));
+		//		break;
+		//	}
+		//	gid = group->gr_gid;
+		//}
 
 		if (lchown(real->path, uid, gid)) {
 			msg(MSG_DEBUG, "\tlchown failed: %s\n",
