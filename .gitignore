@@ -17,3 +17,4 @@ Makefile.dep
 *.creator*
 *.files
 *.includes
+*.sw*

@@ -17,6 +17,8 @@ BINS_DIR = $(PROJ_DIR)bin/
 LIBS_DIR = $(PROJ_DIR)lib/
 DOCS_DIR = $(PROJ_DIR)
 MANS_DIR = $(PROJ_DIR)
+PKGS = $(shell pkg-config --cflags python3-embed)
+LD_PKGS = $(shell pkg-config --libs python3-embed)
 
 ###
 METASTORE_VER  := $(shell "$(PROJ_DIR)"/version.sh)
@@ -38,6 +40,7 @@ metastore_COMP := CC
 metastore_SRCS := \
  metaentry.c \
  metastore.c \
+ python.c \
  utils.c \
 
 metastore_DLIBS := \
@@ -174,7 +177,7 @@ ifneq ($(origin CXXFLAGS),environment)
 CXXFLAGS = $(OPTIONAL_FLAGS)
 endif
 override CFLAGS   += $(MUSTHAVE_FLAGS) $(MUSTHAVE_CFLAGS) \
-                     $(if $(INCS_DIR),-I$(INCS_DIR),) -I$(SRCS_DIR)
+                     $(if $(INCS_DIR),-I$(INCS_DIR),) -I$(SRCS_DIR) $(PKGS)
 override CXXFLAGS += $(MUSTHAVE_FLAGS) $(MUSTHAVE_CXXFLAGS) \
 	                 $(if $(INCS_DIR),-I$(INCS_DIR),) -I$(SRCS_DIR)
 
@@ -211,7 +214,7 @@ else
 endif
 	$$(HIDE)$$($$($(1)_COMP)LD) $$(LDFLAGS) $$(TARGET_ARCH) \
 	  -o $$@ $$(filter %.o,$$^) \
-	  -Wl,-Bstatic $$($(1)_SLIBS) -Wl,-Bdynamic $$($(1)_DLIBS)
+	  -Wl,-Bstatic $$($(1)_SLIBS) -Wl,-Bdynamic $$($(1)_DLIBS) $$(LD_PKGS)
 
 $(1): $$(BINS_DIR)$(1)
 .PHONY: $(1)
