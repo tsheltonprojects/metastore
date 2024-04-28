@@ -97,6 +97,24 @@ static struct PyModuleDef module_def = {
 };
 
 PyMODINIT_FUNC PyInit_libmetastore(void) {
-	return PyModule_Create(&module_def);
+  // Create the module object
+  PyObject* module = PyModule_Create(&module_def);
+  if (module == NULL) {
+      return NULL;
+  }
+  
+  // Add the constants to the module
+  PyModule_AddIntConstant(module, "DIFF_NONE", DIFF_NONE );
+  PyModule_AddIntConstant(module, "DIFF_OWNER", DIFF_OWNER );
+  PyModule_AddIntConstant(module, "DIFF_GROUP", DIFF_GROUP );
+  PyModule_AddIntConstant(module, "DIFF_MODE", DIFF_MODE );
+  PyModule_AddIntConstant(module, "DIFF_TYPE", DIFF_TYPE );
+  PyModule_AddIntConstant(module, "DIFF_MTIME", DIFF_MTIME );
+  PyModule_AddIntConstant(module, "DIFF_XATTR", DIFF_XATTR );
+  PyModule_AddIntConstant(module, "DIFF_ADDED", DIFF_ADDED );
+  PyModule_AddIntConstant(module, "DIFF_DELE", DIFF_DELE );
+
+    
+	return module;
 }
 #endif
