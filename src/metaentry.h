@@ -92,8 +92,8 @@ void mentries_compare(struct metahash *mhashreal,
                       struct metahash *mhashstored,
                       void (*pfunc)(struct metaentry *real,
                                     struct metaentry *stored,
-                                    int cmp),
-                      msettings *st);
+                                    int cmp, void * param),
+                      msettings *st, void * param);
 
 void mentries_dump(struct metahash *mhash);
 

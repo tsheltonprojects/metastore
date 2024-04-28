@@ -5,6 +5,7 @@ BINS := \
  metastore
 
 LIBS := \
+ metastore
 
 ### Directories
 PROJ_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
@@ -17,8 +18,9 @@ BINS_DIR = $(PROJ_DIR)bin/
 LIBS_DIR = $(PROJ_DIR)lib/
 DOCS_DIR = $(PROJ_DIR)
 MANS_DIR = $(PROJ_DIR)
-PKGS = $(shell pkg-config --cflags python3-embed)
+PKGS = $(shell pkg-config --cflags python3-embed)  -fPIC -DENABLE_PYTHON
 LD_PKGS = $(shell pkg-config --libs python3-embed)
+LD_PKGS_SHARED = $(shell pkg-config --libs --shared python3-embed)
 
 ###
 METASTORE_VER  := $(shell "$(PROJ_DIR)"/version.sh)
@@ -256,10 +258,15 @@ ifeq ($$($(1)_COMP),CC)
 else
 	@echo "        CXXLD   $$@"
 endif
+	echo $$(HIDE)$$($$($(1)_COMP)LD) $$(LDFLAGS) $$(TARGET_ARCH) \
+	  -shared -Wl,-soname,$$($(1)_SONAME) \
+	  -o $$@ $$(filter %.o,$$^) \
+	  -Wl,-Bstatic $$($(1)_SLIBS) -Wl,-Bdynamic $$($(1)_DLIBS)  $$(LD_PKGS_SHARED)
+
 	$$(HIDE)$$($$($(1)_COMP)LD) $$(LDFLAGS) $$(TARGET_ARCH) \
 	  -shared -Wl,-soname,$$($(1)_SONAME) \
 	  -o $$@ $$(filter %.o,$$^) \
-	  -Wl,-Bstatic $$($(1)_SLIBS) -Wl,-Bdynamic $$($(1)_DLIBS)
+	  -Wl,-Bstatic $$($(1)_SLIBS) -Wl,-Bdynamic $$($(1)_DLIBS)  $$(LD_PKGS_SHARED)
 
 $$(LIBS_DIR)$$($(1)_ARFILE): \
  $$(addprefix $$(OBJS_DIR),$$($(1)_OBJS)) $$(SDEP) | $$(LIBS_DIR)

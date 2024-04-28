@@ -95,7 +95,7 @@ insert_entry_pdlist(struct metaentry **list, struct metaentry *entry)
  * - for use in mentries_compare
  */
 static void
-compare_print(struct metaentry *real, struct metaentry *stored, int cmp)
+compare_print(struct metaentry *real, struct metaentry *stored, int cmp, void * param)
 {
 	if (!real && (!stored || (cmp == DIFF_NONE || cmp & DIFF_ADDED))) {
 		msg(MSG_ERROR, "%s called with incorrect arguments\n", __func__);
@@ -563,13 +563,13 @@ main(int argc, char **argv)
 
 	switch (action) {
 	case ACTION_DIFF:
-		mentries_compare(real, stored, compare_print, &settings);
+		mentries_compare(real, stored, compare_print, &settings, NULL);
 		break;
 	case ACTION_SAVE:
 		mentries_tofile(real, settings.metafile);
 		break;
 	case ACTION_APPLY:
-		mentries_compare(real, stored, compare_fix, &settings);
+		mentries_compare(real, stored, compare_fix, &settings, NULL);
 		if (settings.do_emptydirs)
 			fixup_emptydirs();
 		if (settings.do_removeemptydirs)

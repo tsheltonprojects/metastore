@@ -616,7 +616,7 @@ mentry_compare_xattr(struct metaentry *left, struct metaentry *right)
 
 /* Compares two metaentries and returns an int with a bitmask of differences */
 int
-mentry_compare(struct metaentry *left, struct metaentry *right, msettings *st)
+mentry_compare(struct metaentry *left, struct metaentry *right, msettings *st )
 {
 	int retval = DIFF_NONE;
 
@@ -660,8 +660,8 @@ void
 mentries_compare(struct metahash *mhashreal,
 				 struct metahash *mhashstored,
 				 void (*pfunc)
-				 (struct metaentry *real, struct metaentry *stored, int cmp),
-				 msettings *st)
+				 (struct metaentry *real, struct metaentry *stored, int cmp, void * param),
+				 msettings *st, void * param)
 {
 	struct metaentry *real, *stored;
 	int key;
@@ -676,16 +676,16 @@ mentries_compare(struct metahash *mhashreal,
 			stored = mentry_find(real->path, mhashstored);
 
 			if (!stored)
-				pfunc(real, NULL, DIFF_ADDED);
+				pfunc(real, NULL, DIFF_ADDED, param);
 			else
-				pfunc(real, stored, mentry_compare(real, stored, st));
+				pfunc(real, stored, mentry_compare(real, stored, st), param);
 		}
 
 		for (stored = mhashstored->bucket[key]; stored; stored = stored->next) {
 			real = mentry_find(stored->path, mhashreal);
 
 			if (!real)
-				pfunc(NULL, stored, DIFF_DELE);
+				pfunc(NULL, stored, DIFF_DELE, param);
 		}
 	}
 }
