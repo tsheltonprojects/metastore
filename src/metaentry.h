@@ -38,6 +38,7 @@ struct metaentry {
 	mode_t   mode;
 	time_t   mtime;
 	long     mtimensec;
+	off_t     size;
 
 	unsigned xattrs;
 	char   **xattr_names;

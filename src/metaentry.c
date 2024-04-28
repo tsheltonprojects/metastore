@@ -166,6 +166,7 @@ mentry_print(const struct metaentry *mentry)
 	msg(MSG_DEBUG, "group\t\t: %s\n", mentry->group);
 	msg(MSG_DEBUG, "mtime\t\t: %ld\n", (unsigned long)mentry->mtime);
 	msg(MSG_DEBUG, "mtimensec\t: %ld\n", (unsigned long)mentry->mtimensec);
+	msg(MSG_DEBUG, "size\t: %ld\n", (unsigned long)mentry->size);
 	msg(MSG_DEBUG, "mode\t\t: %ld\n", (unsigned long)mentry->mode);
 	for (i = 0; i < mentry->xattrs; i++) {
 		msg(MSG_DEBUG, "xattr[%i]\t: %s=\"", i, mentry->xattr_names[i]);
@@ -235,6 +236,7 @@ mentry_create(const char *path)
 	mentry->mode = sbuf.st_mode & 0177777;
 	mentry->mtime = sbuf.st_mtim.tv_sec;
 	mentry->mtimensec = sbuf.st_mtim.tv_nsec;
+	mentry->size = sbuf.st_size;
 
 	/* symlinks have no xattrs */
 	if (S_ISLNK(mentry->mode))
@@ -431,6 +433,7 @@ mentries_tofile(const struct metahash *mhash, const char *path)
 			write_string(mentry->group, to);
 			write_int((uint64_t)mentry->mtime, 8, to);
 			write_int((uint64_t)mentry->mtimensec, 8, to);
+			write_int((uint64_t)mentry->size, 8, to);
 			write_int((uint64_t)mentry->mode, 2, to);
 			write_int(mentry->xattrs, 4, to);
 			for (i = 0; i < mentry->xattrs; i++) {
@@ -514,6 +517,7 @@ mentries_fromfile(struct metahash **mhash, const char *path)
 		mentry->group = read_string(&ptr, max);
 		mentry->mtime = (time_t)read_int(&ptr, 8, max);
 		mentry->mtimensec = (time_t)read_int(&ptr, 8, max);
+		mentry->size = (off_t)read_int(&ptr, 8, max);
 		mentry->mode = (mode_t)read_int(&ptr, 2, max);
 		mentry->xattrs = (unsigned)read_int(&ptr, 4, max);
 
@@ -616,6 +620,7 @@ mentry_compare(struct metaentry *left, struct metaentry *right, msettings *st)
 	     || left->mtimensec != right->mtimensec)
 	   )
 		retval |= DIFF_MTIME;
+
 
 	if (mentry_compare_xattr(left, right)) {
 		retval |= DIFF_XATTR;

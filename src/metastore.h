@@ -22,13 +22,13 @@
 #define METASTORE_H
 
 /* Each file starts with SIGNATURE and VERSION */
-#define SIGNATURE    "MeTaSt00r3"
+#define SIGNATURE    "TS__St00r3"
 #define SIGNATURELEN 10
 #define VERSION      "\0\0\0\0\0\0\0\0"
 #define VERSIONLEN   8
 
 /* Default filename */
-#define METAFILE     "./.metadata"
+#define METAFILE     "./.tsmetadata"
 
 /* Utility defines for the action to take */
 #define ACTION_APPLY 0x01
